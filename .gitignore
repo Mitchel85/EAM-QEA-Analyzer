@@ -1,0 +1,4 @@
+_uploads_*
+_shot_*
+stage_*.js
+test_harness*.js
