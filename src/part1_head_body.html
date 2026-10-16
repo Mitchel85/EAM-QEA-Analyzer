@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>ADMBw QEA Analyzer — QEA-Architekturen niederschwellig analysieren, erkunden &amp; exportieren</title>
+<title>ADMBw QEA Analyzer (Edit) — QEA-Architekturen analysieren, erkunden, bearbeiten &amp; exportieren</title>
 <style>
   :root {
     --bw-blue:#004471; --bw-dark:#0A2E4D; --bw-mid:#5A7184; --bw-light:#C6D6DE;
@@ -322,14 +322,57 @@
     .gpanel { display:none !important; }
     * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
+
+  /* --- v5 Edit-Edition: Bearbeiten (Drawer, Modals, Toasts, Edit-Buttons) --- */
+  #editbtn.hot { background:#FDE68A; border-color:#F59E0B; color:#7C2D12; }
+  .vedit { display:inline-flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12.5px; color:var(--bw-mid); }
+  .vedit button { background:#FFF7ED; border:1px solid #FDBA74; color:#9A3412; border-radius:6px; padding:5px 10px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .vedit button:hover { background:#FFEDD5; }
+  .vedit button.delbtn { background:#FEF2F2; border-color:#FCA5A5; color:#B91C1C; }
+  #editdrawer { position:fixed; top:0; right:0; width:400px; max-width:94vw; height:100vh; background:#fff; border-left:1px solid var(--border); box-shadow:-8px 0 30px rgba(0,0,0,.18); z-index:300; display:flex; flex-direction:column; }
+  .edr-head { padding:12px 14px; background:var(--bw-blue); color:#fff; display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+  .edr-head button { background:transparent; border:none; color:#fff; font-size:16px; cursor:pointer; }
+  .edr-hint { padding:9px 14px; font-size:11.5px; color:#7A5B1E; background:#FFF6E5; border-bottom:1px solid #E8CF9C; }
+  .edr-list { flex:1; overflow:auto; }
+  .edr-item { padding:9px 14px; border-bottom:1px solid #EEF2F5; font-size:12.5px; display:flex; gap:8px; align-items:flex-start; }
+  .edr-item .edr-ic { flex:0 0 auto; }
+  .edr-item .edr-txt { flex:1; min-width:0; }
+  .edr-item .edr-sub { color:var(--bw-mid); font-size:11px; margin-top:2px; word-break:break-word; white-space:pre-wrap; }
+  .edr-item .edr-del { flex:0 0 auto; background:#fff; border:1px solid #FECACA; color:#B91C1C; border-radius:6px; padding:2px 7px; cursor:pointer; font-size:11px; }
+  .edr-empty { padding:18px 14px; color:var(--bw-mid); font-size:12.5px; }
+  .edr-foot { padding:10px 14px; border-top:1px solid var(--border); display:flex; flex-wrap:wrap; gap:7px; background:#F8FAFC; }
+  .emodal { position:fixed; top:0; left:0; right:0; bottom:0; z-index:400; display:flex; align-items:flex-start; justify-content:center; }
+  .em-back { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,.45); }
+  .em-box { position:relative; margin-top:6vh; background:#fff; border-radius:12px; box-shadow:0 18px 50px rgba(0,0,0,.3); width:660px; max-width:94vw; max-height:86vh; display:flex; flex-direction:column; }
+  .em-head { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .em-head b { color:var(--bw-blue); font-size:14.5px; }
+  .em-head button { background:#fff; border:1px solid var(--border); border-radius:6px; padding:3px 9px; cursor:pointer; }
+  .em-body { padding:14px 16px; overflow:auto; }
+  .em-foot { padding:11px 16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; background:#F8FAFC; border-radius:0 0 12px 12px; flex-wrap:wrap; }
+  .eform label { display:block; font-weight:700; color:var(--bw-blue); font-size:12px; margin:9px 0 3px; }
+  .eform input[type=text], .eform textarea, .eform select { width:100%; padding:8px 10px; border:1px solid #C6D2DA; border-radius:7px; font-size:13px; font-family:inherit; }
+  .eform textarea { min-height:88px; resize:vertical; }
+  .eform .dim { font-size:11px; color:var(--bw-mid); margin-top:2px; }
+  .eform .danger { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; border-radius:8px; padding:9px 12px; font-size:12.5px; margin:6px 0; line-height:1.55; }
+  .eform .ok { background:var(--green-bg); border:1px solid #34D399; color:#065F46; border-radius:8px; padding:9px 12px; font-size:12.5px; margin:6px 0; word-break:break-all; }
+  .epickres { border:1px solid var(--border); border-radius:7px; max-height:190px; overflow:auto; display:none; margin-top:4px; }
+  .epickrow { padding:6px 9px; font-size:12.5px; cursor:pointer; border-bottom:1px solid #F1F5F9; }
+  .epickrow:hover { background:#F0F7FF; }
+  .pchipsel a { margin-left:6px; color:#B45309; text-decoration:none; font-weight:700; }
+  .btn-sm.danger { background:#FEF2F2; color:#B91C1C; border-color:#FCA5A5; }
+  .btn-sm.danger:hover { background:#FEE2E2; }
+  #edittoast { position:fixed; left:50%; transform:translateX(-50%); bottom:26px; background:rgba(15,23,42,.93); color:#fff; padding:9px 16px; border-radius:9px; font-size:12.5px; z-index:500; max-width:80vw; }
+  @media print {
+    #editdrawer, #editmodal, #edittoast, .vedit { display:none !important; }
+  }
 </style>
 </head>
 <body>
 <header>
   <div class="hdr-inner">
     <div>
-      <h1>🔍 ADMBw QEA Analyzer <span class="badge-v">v4.0</span></h1>
-      <p>QEA-Architekturen verstehen: Pakete &amp; Sichten erkunden, im Graphen analysieren, Verbindungen zweier Elemente nachweisen und als PNG / Excel exportieren — 100&nbsp;% lokal im Browser, ohne KI.</p>
+      <h1>🔍 ADMBw QEA Analyzer <span class="badge-v">v5.0 · Edit</span></h1>
+      <p>QEA-Architekturen verstehen <b>und bearbeiten</b>: Pakete &amp; Sichten erkunden, im Graphen analysieren, Verbindungen nachweisen, Elemente/Pakete/Sichten/Beziehungen ändern und als neue .qea speichern — 100&nbsp;% lokal im Browser, ohne KI.</p>
     </div>
   </div>
 </header>
@@ -354,6 +397,7 @@
         <div class="mb-model">Modell: <b id="modellname">—</b> &nbsp;·&nbsp; <span id="stats"></span></div>
         <div class="mb-actions">
           <button class="btn-sm" onclick="el('file').click()" title="Andere QEA-/EAPX-Datei öffnen">📂 Andere Datei laden</button>
+          <button class="btn-sm amber" id="editbtn" onclick="EDIT.openPanel()" title="Änderungen vormerken &amp; als neue QEA-Datei speichern">✏️ Bearbeiten <span id="editcnt">0</span></button>
         </div>
       </div>
 
@@ -450,5 +494,8 @@
   </div>
 </main>
 <footer>
-  ADMBw QEA Analyzer v4.0 ·  · 100 % Offline-Auswertung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.
+  ADMBw QEA Analyzer v5.0 (Edit-Edition) ·  · 100 % Offline-Auswertung &amp; Bearbeitung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.
 </footer>
+<div id="editdrawer" hidden></div>
+<div id="editmodal" class="emodal" hidden></div>
+<div id="edittoast" hidden></div>

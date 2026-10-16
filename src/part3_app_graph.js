@@ -528,6 +528,12 @@ function openElement(oid, mode) {
     '<button onclick="pathSetEndpoint(\'start\',\'' + oid + '\')" title="Dieses Element als Start der Verbindungsanalyse setzen">als Start setzen</button>' +
     '<button onclick="pathSetEndpoint(\'end\',\'' + oid + '\')" title="Dieses Element als Ziel der Verbindungsanalyse setzen">als Ziel setzen</button>' +
   '</span>');
+  var veditBtns = (o.type === 'Package')
+    ? '<button onclick="EDIT.pkgEdit(EDIT.pkgIdForObject(\'' + oid + '\'))">✏️ Paket bearbeiten</button>'
+    : '<button onclick="EDIT.elEdit(\'' + oid + '\')">✏️ Element bearbeiten</button>' +
+      '<button onclick="EDIT.connNew(\'' + oid + '\')">＋ Beziehung</button>' +
+      '<button class="delbtn" onclick="EDIT.elDel(\'' + oid + '\')">🗑 Löschen</button>';
+  h.push('<span class="vedit">✏️ ' + veditBtns + '</span>');
   h.push('<span class="vexport">' +
     '<button class="exp-xls" onclick="exportCurrentXLSX()">📊 Umfeld als Excel (.xlsx)</button>' +
     '<button class="exp-png" onclick="exportCurrentPNG()">📸 Graph als PNG</button>' +
@@ -565,11 +571,11 @@ function openElement(oid, mode) {
   h.push('<h3>Ausgehende Beziehungen (' + outgoing.length + ')</h3>');
   if (!outgoing.length) h.push('<div class="hint">Keine ausgehenden Beziehungen.</div>');
   else {
-    h.push('<table class="data"><thead><tr><th>Ziel</th><th>Beziehung</th><th>Ziel-Stereotype</th><th>Paket</th></tr></thead><tbody>');
+    h.push('<table class="data"><thead><tr><th>Ziel</th><th>Beziehung</th><th>Ziel-Stereotype</th><th>Paket</th><th style="width:36px"></th></tr></thead><tbody>');
     for (i = 0; i < outgoing.length && i < 300; i++) {
       c = outgoing[i];
       other = OBJS[String(c.b)];
-      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.b) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td></tr>');
+      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.b) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td><td><button class="btn-sm" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();EDIT.connEdit(' + c.id + ')" title="Diese Beziehung bearbeiten">✏️</button></td></tr>');
     }
     h.push('</tbody></table>');
   }
@@ -577,17 +583,17 @@ function openElement(oid, mode) {
   h.push('<h3>Eingehende Beziehungen (' + incoming.length + ')</h3>');
   if (!incoming.length) h.push('<div class="hint">Keine eingehenden Beziehungen.</div>');
   else {
-    h.push('<table class="data"><thead><tr><th>Quelle</th><th>Beziehung</th><th>Quelle-Stereotype</th><th>Paket</th></tr></thead><tbody>');
+    h.push('<table class="data"><thead><tr><th>Quelle</th><th>Beziehung</th><th>Quelle-Stereotype</th><th>Paket</th><th style="width:36px"></th></tr></thead><tbody>');
     for (i = 0; i < incoming.length && i < 300; i++) {
       c = incoming[i];
       other = OBJS[String(c.a)];
-      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.a) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td></tr>');
+      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.a) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td><td><button class="btn-sm" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();EDIT.connEdit(' + c.id + ')" title="Diese Beziehung bearbeiten">✏️</button></td></tr>');
     }
     h.push('</tbody></table>');
   }
 
   var tags = TAGS[oid] || [];
-  h.push('<h3>Tagged Values / Eigenschaften (' + tags.length + ')</h3>');
+  h.push('<h3>Tagged Values / Eigenschaften (' + tags.length + ') <button class="btn-sm" style="margin-left:8px;vertical-align:middle" onclick="EDIT.tagOpen(\'' + oid + '\')" title="Tags dieses Elements bearbeiten (ändern, ergänzen, entfernen)">🏷️ Bearbeiten</button></h3>');
   if (!tags.length) h.push('<div class="hint">Keine Tagged Values zu diesem Element erfasst.</div>');
   else {
     h.push('<table class="data"><thead><tr><th>Eigenschaft</th><th>Wert</th><th>Notiz</th></tr></thead><tbody>');
