@@ -450,7 +450,7 @@
   </div>
 </main>
 <footer>
-  ADMBw QEA Analyzer v4.0 ·  · 100 % Offline-Auswertung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.
+  ADMBw QEA Analyzer v4.0 · 100 % Offline-Auswertung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.
 </footer>
 <script>
 /* QEA-Reader: nativer SQLite-Parser fuer Sparx-Enterprise-Architect .qea-Dateien.

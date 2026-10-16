@@ -121,4 +121,4 @@ Das Skript prüft alle Script-Blöcke mit `node --check`, stellt sicher, dass ke
 ### v3.0 — 14.10.2026
 * Search-First-Oberfläche, Paket- & Sichten-Explorer, natives `.xlsx`/PNG-Export je Sicht, Graph mit manueller Knotenzahl + Slider, 3 Layouts.
 
-*(Autor: Michael Estel · )*
+*(Autor: Michael Estel)*

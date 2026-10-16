@@ -494,7 +494,7 @@
   </div>
 </main>
 <footer>
-  ADMBw QEA Analyzer v5.0 (Edit-Edition) ·  · 100 % Offline-Auswertung &amp; Bearbeitung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.
+  ADMBw QEA Analyzer v5.0 (Edit-Edition) · 100 % Offline-Auswertung &amp; Bearbeitung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.
 </footer>
 <div id="editdrawer" hidden></div>
 <div id="editmodal" class="emodal" hidden></div>
