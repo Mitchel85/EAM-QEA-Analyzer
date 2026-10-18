@@ -1,5 +1,7 @@
 # ADMBw QEA Analyzer
 
+**▶️ Online ausprobieren:** [mitchel85.github.io/EAM-QEA-Analyzer](https://mitchel85.github.io/EAM-QEA-Analyzer/) — Analyse direkt im Browser, 100 % lokal.
+
 **QEA-Architekturen niederschwellig analysieren — und auf Wunsch bearbeiten. 100 % lokal im Browser, ohne KI, ohne Installation.**
 
 Einzeldatei-Tool (HTML & ASPX) für Sparx-EA-Architekturmodelle (`.qea` / `.eapx` / `.qeax`):
