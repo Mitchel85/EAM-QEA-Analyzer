@@ -75,7 +75,7 @@ Schritt-für-Schritt-Anleitung: [docs/SharePoint-Deployment.md](docs/SharePoint-
 ## Testmodell
 
 Zum Ausprobieren eignet sich die öffentliche Musterarchitektur **MASC** aus dem Begleit-Repo:
-`https://github.com/Mitchel85/eam-qea-tool` → `Demo-Output/Musterarchitektur_MASC.qea` (225 Pakete, 265 Sichten, 1.652 Elemente, 1.746 Beziehungen).
+`https://github.com/Mitchel85/EAM-AI-QEA-Analyzer` → `Demo-Output/Musterarchitektur_MASC.qea` (225 Pakete, 265 Sichten, 1.652 Elemente, 1.746 Beziehungen).
 
 ## Build aus Quellen
 
