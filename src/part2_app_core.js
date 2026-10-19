@@ -1200,10 +1200,12 @@ function openPackage(pid, stayInExplorer) {
     '<button id="btn-mode-graph" onclick="setVPMode(\'graph\')">◉ Paket im Graph visualisieren</button>' +
     '<label style="margin-left:8px;cursor:pointer;color:var(--ink);font-weight:600"><input type="checkbox" ' + (PKG_DEEP ? 'checked ' : '') + 'onchange="togglePkgDeep(this)"> Inkl. Unterpakete</label>' +
     '</span>');
-  h.push('<span class="vedit">✏️ Bearbeiten: ' +
-    '<button onclick="EDIT.pkgEdit(' + pid + ')" title="Paketname &amp; Beschreibung ändern">Paket</button>' +
-    '<button onclick="EDIT.elNew(' + pid + ')" title="Neues Element in diesem Paket anlegen">＋ Element</button>' +
-    '</span>');
+  if (typeof EDIT !== 'undefined') {
+    h.push('<span class="vedit">✏️ Bearbeiten: ' +
+      '<button onclick="EDIT.pkgEdit(' + pid + ')" title="Paketname &amp; Beschreibung ändern">Paket</button>' +
+      '<button onclick="EDIT.elNew(' + pid + ')" title="Neues Element in diesem Paket anlegen">＋ Element</button>' +
+      '</span>');
+  }
   h.push('<span class="vexport">' +
     '<button class="exp-xls" onclick="exportCurrentXLSX()" title="Dieses Paket inkl. Elementen, Beziehungen &amp; Tagged Values als Excel (.xlsx) exportieren">📊 Paket als Excel (.xlsx)</button>' +
     '<button class="exp-png" onclick="exportCurrentPNG()" title="Schaubild oder Graph als PNG exportieren">📸 Als PNG</button>' +
@@ -1463,9 +1465,11 @@ function openDiagramView(diagId, mode) {
     '<button id="btn-mode-list" class="' + (mode === 'graph' ? '' : 'on') + '" onclick="setVPMode(\'list\')">🖼️ Original-Schaubild &amp; Tabellen</button>' +
     '<button id="btn-mode-graph" class="' + (mode === 'graph' ? 'on' : '') + '" onclick="setVPMode(\'graph\')">◉ Sicht im interaktiven Graph erkunden</button>' +
     '</span>');
-  h.push('<span class="vedit">✏️ ' +
-    '<button onclick="EDIT.diagEdit(' + diag.id + ')" title="Sicht-/Diagrammnamen &amp; Beschreibung ändern">Sicht bearbeiten</button>' +
-    '</span>');
+  if (typeof EDIT !== 'undefined') {
+    h.push('<span class="vedit">✏️ ' +
+      '<button onclick="EDIT.diagEdit(' + diag.id + ')" title="Sicht-/Diagrammnamen &amp; Beschreibung ändern">Sicht bearbeiten</button>' +
+      '</span>');
+  }
   h.push('<span class="vexport">' +
     '<button class="exp-png" onclick="exportCurrentPNG()" title="Diese Sicht (Schaubild oder Graph) als hochauflösendes PNG exportieren">📸 Sicht als PNG exportieren</button>' +
     '<button class="exp-xls" onclick="exportCurrentXLSX()" title="Alle Elemente, Beziehungen &amp; Tagged Values dieser Sicht als Excel (.xlsx) exportieren">📊 Sicht als Excel (.xlsx) exportieren</button>' +

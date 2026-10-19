@@ -84,7 +84,16 @@
   /* Explorer Layout (Paketbaum links + Paket-/Sicht-Inhalt rechts) */
   .exp-wrap { display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start; }
   @media (max-width:1024px){ .exp-wrap { grid-template-columns:1fr; } }
-  .exp-tree-panel { background:#fff; border:1px solid var(--border); border-radius:10px; padding:12px; position:sticky; top:12px; max-height:calc(100vh - 28px); display:flex; flex-direction:column; }
+  .exp-tree-panel { background:#fff; border:1px solid var(--border); border-radius:10px; padding:12px; position:sticky; top:12px; max-height:calc(100vh - 28px); display:flex; flex-direction:column; min-width:0; }
+  @media (max-width:600px){
+    /* Mobile: Grid-Spalte darf nicht an nowrap-Badges/Baumzeilen anwachsen —
+       der Baum scrollt intern (.tree-scroll); kein horizontaler Seiten-Scroll.
+       Breite tabellen (table.data, Referenz-Grid) scrollen intern statt der Seite. */
+    .exp-tree-panel { min-width:0; max-width:100%; }
+    .exp-main { overflow-x:auto; }
+    #gridbox, #overview { overflow-x:auto; }
+    table.data td, table.data th { overflow-wrap:anywhere; }
+  }
   .tree-hdr { font-weight:700; color:var(--bw-blue); font-size:13.5px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .tree-filter { width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:12.5px; margin-bottom:8px; font-family:inherit; }
   .tree-scroll { overflow:auto; flex:1; padding-right:4px; }
@@ -322,7 +331,8 @@
     .gpanel { display:none !important; }
     * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
-</style>
+
+  </style>
 </head>
 <body>
 <header>
@@ -1595,6 +1605,7 @@ function loadQea(buffer, name) {
     alert('In der Datei wurde keine Sparx-EA-Struktur gefunden (Kern-Tabelle t_object fehlt oder ist leer).');
     return;
   }
+  if (typeof EDIT !== 'undefined' && EDIT.setSource) EDIT.setSource(buffer, name);
   var nPkg = Object.keys(PKG).length;
   el('upload').style.display = 'none';
   el('workspace').style.display = 'block';
@@ -2137,6 +2148,12 @@ function openPackage(pid, stayInExplorer) {
     '<button id="btn-mode-graph" onclick="setVPMode(\'graph\')">◉ Paket im Graph visualisieren</button>' +
     '<label style="margin-left:8px;cursor:pointer;color:var(--ink);font-weight:600"><input type="checkbox" ' + (PKG_DEEP ? 'checked ' : '') + 'onchange="togglePkgDeep(this)"> Inkl. Unterpakete</label>' +
     '</span>');
+  if (typeof EDIT !== 'undefined') {
+    h.push('<span class="vedit">✏️ Bearbeiten: ' +
+      '<button onclick="EDIT.pkgEdit(' + pid + ')" title="Paketname &amp; Beschreibung ändern">Paket</button>' +
+      '<button onclick="EDIT.elNew(' + pid + ')" title="Neues Element in diesem Paket anlegen">＋ Element</button>' +
+      '</span>');
+  }
   h.push('<span class="vexport">' +
     '<button class="exp-xls" onclick="exportCurrentXLSX()" title="Dieses Paket inkl. Elementen, Beziehungen &amp; Tagged Values als Excel (.xlsx) exportieren">📊 Paket als Excel (.xlsx)</button>' +
     '<button class="exp-png" onclick="exportCurrentPNG()" title="Schaubild oder Graph als PNG exportieren">📸 Als PNG</button>' +
@@ -2396,6 +2413,11 @@ function openDiagramView(diagId, mode) {
     '<button id="btn-mode-list" class="' + (mode === 'graph' ? '' : 'on') + '" onclick="setVPMode(\'list\')">🖼️ Original-Schaubild &amp; Tabellen</button>' +
     '<button id="btn-mode-graph" class="' + (mode === 'graph' ? 'on' : '') + '" onclick="setVPMode(\'graph\')">◉ Sicht im interaktiven Graph erkunden</button>' +
     '</span>');
+  if (typeof EDIT !== 'undefined') {
+    h.push('<span class="vedit">✏️ ' +
+      '<button onclick="EDIT.diagEdit(' + diag.id + ')" title="Sicht-/Diagrammnamen &amp; Beschreibung ändern">Sicht bearbeiten</button>' +
+      '</span>');
+  }
   h.push('<span class="vexport">' +
     '<button class="exp-png" onclick="exportCurrentPNG()" title="Diese Sicht (Schaubild oder Graph) als hochauflösendes PNG exportieren">📸 Sicht als PNG exportieren</button>' +
     '<button class="exp-xls" onclick="exportCurrentXLSX()" title="Alle Elemente, Beziehungen &amp; Tagged Values dieser Sicht als Excel (.xlsx) exportieren">📊 Sicht als Excel (.xlsx) exportieren</button>' +
@@ -3012,6 +3034,12 @@ function openElement(oid, mode) {
     '<button onclick="pathSetEndpoint(\'start\',\'' + oid + '\')" title="Dieses Element als Start der Verbindungsanalyse setzen">als Start setzen</button>' +
     '<button onclick="pathSetEndpoint(\'end\',\'' + oid + '\')" title="Dieses Element als Ziel der Verbindungsanalyse setzen">als Ziel setzen</button>' +
   '</span>');
+  var veditBtns = (typeof EDIT === 'undefined') ? '' : ((o.type === 'Package')
+    ? '<button onclick="EDIT.pkgEdit(EDIT.pkgIdForObject(\'' + oid + '\'))">✏️ Paket bearbeiten</button>'
+    : '<button onclick="EDIT.elEdit(\'' + oid + '\')">✏️ Element bearbeiten</button>' +
+      '<button onclick="EDIT.connNew(\'' + oid + '\')">＋ Beziehung</button>' +
+      '<button class="delbtn" onclick="EDIT.elDel(\'' + oid + '\')">🗑 Löschen</button>');
+  if (veditBtns) h.push('<span class="vedit">✏️ ' + veditBtns + '</span>');
   h.push('<span class="vexport">' +
     '<button class="exp-xls" onclick="exportCurrentXLSX()">📊 Umfeld als Excel (.xlsx)</button>' +
     '<button class="exp-png" onclick="exportCurrentPNG()">📸 Graph als PNG</button>' +
@@ -3049,11 +3077,11 @@ function openElement(oid, mode) {
   h.push('<h3>Ausgehende Beziehungen (' + outgoing.length + ')</h3>');
   if (!outgoing.length) h.push('<div class="hint">Keine ausgehenden Beziehungen.</div>');
   else {
-    h.push('<table class="data"><thead><tr><th>Ziel</th><th>Beziehung</th><th>Ziel-Stereotype</th><th>Paket</th></tr></thead><tbody>');
+    h.push('<table class="data"><thead><tr><th>Ziel</th><th>Beziehung</th><th>Ziel-Stereotype</th><th>Paket</th><th style="width:36px"></th></tr></thead><tbody>');
     for (i = 0; i < outgoing.length && i < 300; i++) {
       c = outgoing[i];
       other = OBJS[String(c.b)];
-      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.b) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td></tr>');
+      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.b) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td><td>' + (typeof EDIT !== 'undefined' ? '<button class="btn-sm" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();EDIT.connEdit(' + c.id + ')" title="Diese Beziehung bearbeiten">✏️</button>' : '') + '</td></tr>');
     }
     h.push('</tbody></table>');
   }
@@ -3061,17 +3089,17 @@ function openElement(oid, mode) {
   h.push('<h3>Eingehende Beziehungen (' + incoming.length + ')</h3>');
   if (!incoming.length) h.push('<div class="hint">Keine eingehenden Beziehungen.</div>');
   else {
-    h.push('<table class="data"><thead><tr><th>Quelle</th><th>Beziehung</th><th>Quelle-Stereotype</th><th>Paket</th></tr></thead><tbody>');
+    h.push('<table class="data"><thead><tr><th>Quelle</th><th>Beziehung</th><th>Quelle-Stereotype</th><th>Paket</th><th style="width:36px"></th></tr></thead><tbody>');
     for (i = 0; i < incoming.length && i < 300; i++) {
       c = incoming[i];
       other = OBJS[String(c.a)];
-      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.a) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td></tr>');
+      h.push('<tr class="clickable" onclick="openElement(\'' + String(c.a) + '\')"><td><b>' + esc(other ? other.name : '?') + '</b></td><td><code>' + esc(c.st || c.type || '→') + '</code></td><td>' + esc(other ? other.st : '') + '</td><td class="dim">' + esc(other ? other.pkg : '') + '</td><td>' + (typeof EDIT !== 'undefined' ? '<button class="btn-sm" style="padding:2px 7px;font-size:11px" onclick="event.stopPropagation();EDIT.connEdit(' + c.id + ')" title="Diese Beziehung bearbeiten">✏️</button>' : '') + '</td></tr>');
     }
     h.push('</tbody></table>');
   }
 
   var tags = TAGS[oid] || [];
-  h.push('<h3>Tagged Values / Eigenschaften (' + tags.length + ')</h3>');
+  h.push('<h3>Tagged Values / Eigenschaften (' + tags.length + ')' + (typeof EDIT !== 'undefined' ? ' <button class="btn-sm" style="margin-left:8px;vertical-align:middle" onclick="EDIT.tagOpen(\'' + oid + '\')" title="Tags dieses Elements bearbeiten (ändern, ergänzen, entfernen)">🏷️ Bearbeiten</button>' : '') + '</h3>');
   if (!tags.length) h.push('<div class="hint">Keine Tagged Values zu diesem Element erfasst.</div>');
   else {
     h.push('<table class="data"><thead><tr><th>Eigenschaft</th><th>Wert</th><th>Notiz</th></tr></thead><tbody>');
@@ -4255,20 +4283,26 @@ function findShortestPath(adj, startId, endId, directed, maxHops) {
   return { steps: steps, hops: steps.length, ms: pathNowMs() - t0 };
 }
 
-/* Alternative Pfade: tiefenbeschränktes DFS mit Backtracking (Simple Paths) */
+/* Alternative Pfade: tiefenbeschränktes DFS mit Backtracking (Simple Paths).
+   Budget: max. 50.000 DFS-Schritte oder 2.000 ms. Wird das Budget erreicht,
+   liefert das Ergebnis capped=true — die UI meldet den Abbruch dann sichtbar
+   (kein stillschweigend unvollständiges Ergebnis mehr). */
 function findAltPaths(adj, startId, endId, directed, maxHops, maxPaths) {
   var t0 = pathNowMs();
   startId = String(startId); endId = String(endId);
   maxPaths = maxPaths || 5;
-  var paths = [], stepsCount = 0, maxSteps = 2500;
+  var paths = [], stepsCount = 0;
+  var maxSteps = 50000, maxMs = 2000, stopped = false;
   var inBranch = {};
   inBranch[startId] = true;
 
   function deg(id) { return adj[id] ? adj[id].length : 0; }
 
   function dfs(cur, curPath) {
-    if (paths.length >= maxPaths || stepsCount >= maxSteps) return;
+    if (stopped || paths.length >= maxPaths) return;
     stepsCount++;
+    if (stepsCount >= maxSteps) { stopped = true; return; }
+    if ((stepsCount % 256) === 0 && (pathNowMs() - t0) > maxMs) { stopped = true; return; }
     if (cur === endId && curPath.length > 0) { paths.push(curPath.slice(0)); return; }
     if (curPath.length >= maxHops) return;
     var edges = (adj[cur] || []).slice(0);
@@ -4283,7 +4317,7 @@ function findAltPaths(adj, startId, endId, directed, maxHops, maxPaths) {
       dfs(e.to, curPath);
       curPath.pop();
       delete inBranch[e.to];
-      if (paths.length >= maxPaths || stepsCount >= maxSteps) return;
+      if (stopped || paths.length >= maxPaths) return;
     }
   }
   dfs(startId, []);
@@ -4294,7 +4328,7 @@ function findAltPaths(adj, startId, endId, directed, maxHops, maxPaths) {
     var key = [startId].concat(paths[p].map(function (s) { return s.to; })).join('>');
     if (!seen[key]) { seen[key] = 1; uniq.push(paths[p]); }
   }
-  return { paths: uniq, ms: pathNowMs() - t0, capped: stepsCount >= maxSteps };
+  return { paths: uniq, ms: pathNowMs() - t0, capped: stopped, steps: stepsCount };
 }
 
 /* Erreichbarkeit: Wie viele Knoten erreicht id innerhalb maxHops? */
@@ -4585,6 +4619,16 @@ function pathRenderResults() {
     var steps = o.mode === 'multi' ? o.paths[PATH.selPath] : o.steps;
     var hops = steps.length;
     h.push('<div class="pbanner ok">✔ <b>Verbindung gefunden:</b> ' + hops + ' Hop' + (hops === 1 ? '' : 's') + ' · ' + (hops + 1) + ' Elemente · ' + hops + ' Beziehung' + (hops === 1 ? '' : 'en') + ' · Modus: ' + (o.mode === 'multi' ? 'Alternativpfade' : 'kürzester Pfad') + ' (' + dirTxt + ') · Berechnung: ' + (Math.round(o.ms * 100) / 100) + ' ms</div>');
+  }
+
+  /* Sichtbarer Hinweis, wenn die Alternativpfad-Suche das interne Budget
+     erreicht hat — das Ergebnis ist dann möglicherweise unvollständig. */
+  if (o.mode === 'multi' && o.capped && !o.trivial && !o.isolated) {
+    h.push('<div class="pbanner warn">⚠ <b>Suche limitiert:</b> Die Alternativpfad-Suche wurde wegen des internen Suchlimits vorzeitig abgebrochen — '
+      + (o.none
+        ? '„Keine Verbindung“ ist deshalb nicht abschließend; es können trotzdem Pfade existieren (Hops erhöhen oder erneut suchen).'
+        : 'es können <b>weitere alternative Pfade</b> existieren (angezeigt: ' + o.paths.length + ' von max. 5).')
+      + '</div>');
   }
 
   var showResult = !o.none && !o.trivial && !o.isolated;

@@ -136,6 +136,84 @@ for fn in ["sql-wasm.js", "sql-wasm.wasm", "LICENSE-sql.js"]:
     if os.path.exists(src) and os.path.abspath(src) != os.path.abspath(dst):
         shutil.copy2(src, dst)
 
+# ================================================================
+# 4. Analyse-Edition (v4.0, ohne Edit/Bearbeiten) aus denselben Quellen bauen:
+#    part1 ohne v5-Edit-Bestandteile + QEA-Reader/ADMBW_DATA + part2–4.
+#    Die App rendert Edit-Schaltflächen nur bei vorhandenem EDIT-Modul
+#    (typeof EDIT !== 'undefined').
+# ================================================================
+PLAIN_NAME = "ADMBw_QEA_Analyzer"
+EDIT_BADGE = '<span class="badge-v">v5.0 · Edit</span>'
+PLAIN_BADGE = '<span class="badge-v">v4.0</span>'
+EDIT_P = 'QEA-Architekturen verstehen <b>und bearbeiten</b>: Pakete &amp; Sichten erkunden, im Graphen analysieren, Verbindungen nachweisen, Elemente/Pakete/Sichten/Beziehungen ändern und als neue .qea speichern — 100&nbsp;% lokal im Browser, ohne KI.'
+PLAIN_P = 'QEA-Architekturen verstehen: Pakete &amp; Sichten erkunden, im Graphen analysieren, Verbindungen zweier Elemente nachweisen und als PNG / Excel exportieren — 100&nbsp;% lokal im Browser, ohne KI.'
+EDIT_FOOTER = 'ADMBw QEA Analyzer v5.0 (Edit-Edition) · 100 % Offline-Auswertung &amp; Bearbeitung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.'
+PLAIN_FOOTER = 'ADMBw QEA Analyzer v4.0 · 100 % Offline-Auswertung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.'
+V5_CSS_MARKER = '/* --- v5 Edit-Edition: Bearbeiten (Drawer, Modals, Toasts, Edit-Buttons) --- */'
+
+plain_part1 = part1
+plain_part1 = plain_part1.replace(
+    '<title>ADMBw QEA Analyzer (Edit) — QEA-Architekturen analysieren, erkunden, bearbeiten &amp; exportieren</title>',
+    '<title>ADMBw QEA Analyzer — QEA-Architekturen niederschwellig analysieren, erkunden &amp; exportieren</title>')
+assert V5_CSS_MARKER in plain_part1, "v5-Edit-CSS-Block nicht gefunden!"
+head_css, tail_after_style = plain_part1.split(V5_CSS_MARKER, 1)
+tail_after_style = tail_after_style.split('</style>', 1)[1]
+plain_part1 = head_css + '</style>' + tail_after_style
+assert EDIT_BADGE in plain_part1 and EDIT_P in plain_part1, "Edit-Kopfzeile nicht gefunden!"
+plain_part1 = plain_part1.replace(EDIT_BADGE, PLAIN_BADGE).replace(EDIT_P, PLAIN_P)
+plain_part1 = re.sub(
+    r'\s*<button class="btn-sm amber" id="editbtn"[^>]*>.*?</button>', '', plain_part1,
+    flags=re.S)
+assert EDIT_FOOTER in plain_part1, "Edit-Footer nicht gefunden!"
+plain_part1 = plain_part1.replace(EDIT_FOOTER, PLAIN_FOOTER)
+for edit_div in ['<div id="editdrawer" hidden></div>',
+                 '<div id="editmodal" class="emodal" hidden></div>',
+                 '<div id="edittoast" hidden></div>']:
+    assert edit_div in plain_part1, f"Edit-Container fehlt: {edit_div}"
+    plain_part1 = plain_part1.replace('\n' + edit_div, '')
+assert 'EDIT.openPanel' not in plain_part1 and 'id="editbtn"' not in plain_part1
+
+full_plain = (
+    plain_part1.rstrip() + "\n" +
+    script_qea_and_data.rstrip() + "\n" +
+    "<script>\n" +
+    part2.rstrip() + "\n\n" +
+    part3.rstrip() + "\n\n" +
+    part4.rstrip() + "\n" +
+    "</script>\n</body>\n</html>\n"
+)
+assert "typeof EDIT !== 'undefined'" in full_plain, "Edit-Guards fehlen in der Analyse-Edition"
+assert "<%" not in full_plain, "Fehler: '<%' im Inhalt der Analyse-Edition gefunden!"
+plain_scripts = re.findall(r"<script[^>]*>(.*?)</script>", full_plain, flags=re.S)
+assert len(plain_scripts) == 3, f"Erwartet: 3 <script>-Blöcke (Analyse), gefunden: {len(plain_scripts)}"
+for idx, sc in enumerate(plain_scripts, 1):
+    tmp_js = os.path.join(DIR, f"_check_plain_{idx}.js")
+    with open(tmp_js, "w", encoding="utf-8") as f:
+        f.write(sc)
+    subprocess.check_call(["node", "--check", tmp_js])
+    os.remove(tmp_js)
+    print(f"  Analyse-Block {idx}: node --check OK ({len(sc)} chars)")
+
+targets_plain_html = [
+    os.path.join(DIST, PLAIN_NAME + ".html"),
+    os.path.join(DOCS, PLAIN_NAME + ".html"),
+    os.path.join(OUT_DIR, PLAIN_NAME + ".html"),
+]
+for p in targets_plain_html:
+    os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(full_plain)
+targets_plain_aspx = [
+    os.path.join(DIST, PLAIN_NAME + ".aspx"),
+    os.path.join(OUT_DIR, PLAIN_NAME + ".aspx"),
+]
+for p in targets_plain_aspx:
+    os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+    with open(p, "wb") as f:
+        f.write(b"\xef\xbb\xbf" + full_plain.encode("utf-8"))
+
 print("Build erfolgreich!")
-print("  HTML:", targets_html[0], os.path.getsize(targets_html[0]), "bytes")
-print("  ASPX:", targets_aspx[0], os.path.getsize(targets_aspx[0]), "bytes")
+print("  HTML (Edit):", targets_html[0], os.path.getsize(targets_html[0]), "bytes")
+print("  ASPX (Edit):", targets_aspx[0], os.path.getsize(targets_aspx[0]), "bytes")
+print("  HTML (Analyse):", targets_plain_html[0], os.path.getsize(targets_plain_html[0]), "bytes")
+print("  ASPX (Analyse):", targets_plain_aspx[0], os.path.getsize(targets_plain_aspx[0]), "bytes")

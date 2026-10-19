@@ -66,20 +66,26 @@ function findShortestPath(adj, startId, endId, directed, maxHops) {
   return { steps: steps, hops: steps.length, ms: pathNowMs() - t0 };
 }
 
-/* Alternative Pfade: tiefenbeschränktes DFS mit Backtracking (Simple Paths) */
+/* Alternative Pfade: tiefenbeschränktes DFS mit Backtracking (Simple Paths).
+   Budget: max. 50.000 DFS-Schritte oder 2.000 ms. Wird das Budget erreicht,
+   liefert das Ergebnis capped=true — die UI meldet den Abbruch dann sichtbar
+   (kein stillschweigend unvollständiges Ergebnis mehr). */
 function findAltPaths(adj, startId, endId, directed, maxHops, maxPaths) {
   var t0 = pathNowMs();
   startId = String(startId); endId = String(endId);
   maxPaths = maxPaths || 5;
-  var paths = [], stepsCount = 0, maxSteps = 2500;
+  var paths = [], stepsCount = 0;
+  var maxSteps = 50000, maxMs = 2000, stopped = false;
   var inBranch = {};
   inBranch[startId] = true;
 
   function deg(id) { return adj[id] ? adj[id].length : 0; }
 
   function dfs(cur, curPath) {
-    if (paths.length >= maxPaths || stepsCount >= maxSteps) return;
+    if (stopped || paths.length >= maxPaths) return;
     stepsCount++;
+    if (stepsCount >= maxSteps) { stopped = true; return; }
+    if ((stepsCount % 256) === 0 && (pathNowMs() - t0) > maxMs) { stopped = true; return; }
     if (cur === endId && curPath.length > 0) { paths.push(curPath.slice(0)); return; }
     if (curPath.length >= maxHops) return;
     var edges = (adj[cur] || []).slice(0);
@@ -94,7 +100,7 @@ function findAltPaths(adj, startId, endId, directed, maxHops, maxPaths) {
       dfs(e.to, curPath);
       curPath.pop();
       delete inBranch[e.to];
-      if (paths.length >= maxPaths || stepsCount >= maxSteps) return;
+      if (stopped || paths.length >= maxPaths) return;
     }
   }
   dfs(startId, []);
@@ -105,7 +111,7 @@ function findAltPaths(adj, startId, endId, directed, maxHops, maxPaths) {
     var key = [startId].concat(paths[p].map(function (s) { return s.to; })).join('>');
     if (!seen[key]) { seen[key] = 1; uniq.push(paths[p]); }
   }
-  return { paths: uniq, ms: pathNowMs() - t0, capped: stepsCount >= maxSteps };
+  return { paths: uniq, ms: pathNowMs() - t0, capped: stopped, steps: stepsCount };
 }
 
 /* Erreichbarkeit: Wie viele Knoten erreicht id innerhalb maxHops? */
@@ -396,6 +402,16 @@ function pathRenderResults() {
     var steps = o.mode === 'multi' ? o.paths[PATH.selPath] : o.steps;
     var hops = steps.length;
     h.push('<div class="pbanner ok">✔ <b>Verbindung gefunden:</b> ' + hops + ' Hop' + (hops === 1 ? '' : 's') + ' · ' + (hops + 1) + ' Elemente · ' + hops + ' Beziehung' + (hops === 1 ? '' : 'en') + ' · Modus: ' + (o.mode === 'multi' ? 'Alternativpfade' : 'kürzester Pfad') + ' (' + dirTxt + ') · Berechnung: ' + (Math.round(o.ms * 100) / 100) + ' ms</div>');
+  }
+
+  /* Sichtbarer Hinweis, wenn die Alternativpfad-Suche das interne Budget
+     erreicht hat — das Ergebnis ist dann möglicherweise unvollständig. */
+  if (o.mode === 'multi' && o.capped && !o.trivial && !o.isolated) {
+    h.push('<div class="pbanner warn">⚠ <b>Suche limitiert:</b> Die Alternativpfad-Suche wurde wegen des internen Suchlimits vorzeitig abgebrochen — '
+      + (o.none
+        ? '„Keine Verbindung“ ist deshalb nicht abschließend; es können trotzdem Pfade existieren (Hops erhöhen oder erneut suchen).'
+        : 'es können <b>weitere alternative Pfade</b> existieren (angezeigt: ' + o.paths.length + ' von max. 5).')
+      + '</div>');
   }
 
   var showResult = !o.none && !o.trivial && !o.isolated;
