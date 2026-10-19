@@ -20,18 +20,21 @@ import re
 import shutil
 import subprocess
 
-DIR = "/root/hermes-workspace/admbw_viewpoint_dashboard"
-VEND = "/root/hermes-workspace/admbw-qea-analyzer/vendor"
-BAK_HTML = os.path.join(DIR, "backups/ADMBw_Viewpoint_Dashboard.html")
-DIST = "/root/hermes-workspace/admbw-qea-analyzer/dist"
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HERE)
+DIR = HERE
+VEND = os.path.join(REPO, "vendor")
+BAK_HTML = os.path.join(DIR, "qea_open_and_data.html")
+DIST = os.path.join(REPO, "dist")
+DOCS = os.path.join(REPO, "docs")
 OUT_DIR = "/root/outputs/Mitch_6882251060"
 NAME = "ADMBw_QEA_Analyzer_Edit"
 
 with open(BAK_HTML, "r", encoding="utf-8") as f:
-    orig_lines = f.readlines()
+    script_qea_and_data = f.read()
 
-# Zeilen 211 bis 693 (1-basiert): <script>qeaOpen...</script> und <script>var ADMBW_DATA = ...</script>
-script_qea_and_data = "".join(orig_lines[210:693])
+# Der QEA-Reader + ADMBW_DATA-Block liegt jetzt versioniert in src/ —
+# kein externes Backup mehr nötig (reproduzierbarer Build, AAroN-Review 19.10.2026).
 assert "function qeaOpen(" in script_qea_and_data, "qeaOpen fehlt!"
 assert "var ADMBW_DATA =" in script_qea_and_data, "ADMBW_DATA fehlt!"
 
@@ -81,10 +84,10 @@ for idx, sc in enumerate(scripts, 1):
     os.remove(tmp_js)
     print(f"  Block {idx}: node --check OK ({len(sc)} chars)")
 
-# 1. HTML schreiben (Arbeitsverzeichnis + dist + Auslieferungsordner)
+# 1. HTML schreiben (nur dist + Auslieferungsordner; src bleibt Quellcode)
 targets_html = [
-    os.path.join(DIR, NAME + ".html"),
     os.path.join(DIST, NAME + ".html"),
+    os.path.join(DOCS, NAME + ".html"),
     os.path.join(OUT_DIR, NAME + ".html"),
 ]
 for p in targets_html:
@@ -92,13 +95,20 @@ for p in targets_html:
     with open(p, "w", encoding="utf-8") as f:
         f.write(full_html)
 
+# 1b. index.html für GitHub Pages (Weiterleitung auf die Analyse-App)
+with open(os.path.join(DIST, "index.html"), "w", encoding="utf-8") as f:
+    f.write('<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'
+            '<meta http-equiv="refresh" content="0; url=' + NAME + '.html">'
+            '<title>EAM QEA Analyzer</title></head><body>'
+            '<p>Weiterleitung … <a href="' + NAME + '.html">EAM QEA Analyzer öffnen</a></p>'
+            '</body></html>\n')
+
 # 2. ASPX bauen: Inhalt identisch, beginnt DIREKT mit <!DOCTYPE html>, UTF-8 mit BOM
 assert full_html.startswith('<!DOCTYPE html>')
 assert "<%" not in full_html, "ASPY enthält Server-Direktiven!"
 assert full_html.lstrip('\ufeff').startswith('<!DOCTYPE html>'), "ASPY muss mit <!DOCTYPE html> beginnen!"
 
 targets_aspx = [
-    os.path.join(DIR, NAME + ".aspx"),
     os.path.join(DIST, NAME + ".aspx"),
     os.path.join(OUT_DIR, NAME + ".aspx"),
 ]
@@ -108,12 +118,17 @@ for p in targets_aspx:
         f.write(b"\xef\xbb\xbf" + full_html.encode("utf-8"))
 
 # 3. Quellbausteine + Vendor in die Projektstruktur kopieren (für GitHub)
-SRC = "/root/hermes-workspace/admbw-qea-analyzer/src"
-VEND_REPO = "/root/hermes-workspace/admbw-qea-analyzer/vendor"
+SRC = os.path.join(REPO, "src")
+VEND_REPO = os.path.join(REPO, "vendor")
 os.makedirs(SRC, exist_ok=True)
 for fn in ["part1_head_body.html", "part2_app_core.js", "part3_app_graph.js", "part4_path.js", "part5_edit.js"]:
-    shutil.copy2(os.path.join(DIR, fn), os.path.join(SRC, fn))
-shutil.copy2(__file__, os.path.join(SRC, "build_release.py"))
+    src = os.path.join(DIR, fn)
+    dst = os.path.join(SRC, fn)
+    if os.path.abspath(src) != os.path.abspath(dst):
+        shutil.copy2(src, dst)
+build_dst = os.path.join(SRC, "build_release.py")
+if os.path.abspath(__file__) != os.path.abspath(build_dst):
+    shutil.copy2(__file__, build_dst)
 os.makedirs(VEND_REPO, exist_ok=True)
 for fn in ["sql-wasm.js", "sql-wasm.wasm", "LICENSE-sql.js"]:
     src = os.path.join(VEND, fn)
@@ -122,5 +137,5 @@ for fn in ["sql-wasm.js", "sql-wasm.wasm", "LICENSE-sql.js"]:
         shutil.copy2(src, dst)
 
 print("Build erfolgreich!")
-print("  HTML:", targets_html[2], os.path.getsize(targets_html[2]), "bytes")
-print("  ASPX:", targets_aspx[2], os.path.getsize(targets_aspx[2]), "bytes")
+print("  HTML:", targets_html[0], os.path.getsize(targets_html[0]), "bytes")
+print("  ASPX:", targets_aspx[0], os.path.getsize(targets_aspx[0]), "bytes")
