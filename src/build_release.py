@@ -150,15 +150,19 @@ PLAIN_P = 'QEA-Architekturen verstehen: Pakete &amp; Sichten erkunden, im Graphe
 EDIT_FOOTER = 'ADMBw QEA Analyzer v5.0 (Edit-Edition) · 100 % Offline-Auswertung &amp; Bearbeitung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.'
 PLAIN_FOOTER = 'ADMBw QEA Analyzer v4.0 · 100 % Offline-Auswertung im Browser (keine Datenübertragung) · Farben gemäß ADMBw/NAFv4.'
 V5_CSS_MARKER = '/* --- v5 Edit-Edition: Bearbeiten (Drawer, Modals, Toasts, Edit-Buttons) --- */'
+# Design-Umschaltung steht am ENDE des <style>-Blocks und muss in BEIDEN Editionen bleiben
+THEME_CSS_START = '  /* ---------- Designumschaltung: Standard = hell, Dunkel nur per Button ---------- */'
 
 plain_part1 = part1
 plain_part1 = plain_part1.replace(
     '<title>ADMBw QEA Analyzer (Edit) — QEA-Architekturen analysieren, erkunden, bearbeiten &amp; exportieren</title>',
     '<title>ADMBw QEA Analyzer — QEA-Architekturen niederschwellig analysieren, erkunden &amp; exportieren</title>')
 assert V5_CSS_MARKER in plain_part1, "v5-Edit-CSS-Block nicht gefunden!"
-head_css, tail_after_style = plain_part1.split(V5_CSS_MARKER, 1)
-tail_after_style = tail_after_style.split('</style>', 1)[1]
-plain_part1 = head_css + '</style>' + tail_after_style
+assert THEME_CSS_START in plain_part1, "Design-Umschaltung CSS nicht gefunden!"
+head_css, rest = plain_part1.split(V5_CSS_MARKER, 1)
+theme_css = rest[rest.index(THEME_CSS_START):].split('</style>', 1)[0]   # Theme-CSS (hell/dunkel) bis </style>
+tail_after_style = rest.split('</style>', 1)[1]
+plain_part1 = head_css + theme_css.rstrip() + '\n</style>' + tail_after_style
 assert EDIT_BADGE in plain_part1 and EDIT_P in plain_part1, "Edit-Kopfzeile nicht gefunden!"
 plain_part1 = plain_part1.replace(EDIT_BADGE, PLAIN_BADGE).replace(EDIT_P, PLAIN_P)
 plain_part1 = re.sub(
@@ -193,6 +197,10 @@ for idx, sc in enumerate(plain_scripts, 1):
     subprocess.check_call(["node", "--check", tmp_js])
     os.remove(tmp_js)
     print(f"  Analyse-Block {idx}: node --check OK ({len(sc)} chars)")
+
+# Genau ein Design-Button je Ausgabe (Style-/Script-Blöcke werden verdoppelt eingebettet)
+assert full_html.count('id="themeBtn"') == 1, f"Edit-Edition: {full_html.count('id=\"themeBtn\"')} Design-Buttons"
+assert full_plain.count('id="themeBtn"') == 1, f"Analyse-Edition: {full_plain.count('id=\"themeBtn\"')} Design-Buttons"
 
 targets_plain_html = [
     os.path.join(DIST, PLAIN_NAME + ".html"),

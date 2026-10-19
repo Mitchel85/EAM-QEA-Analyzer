@@ -332,7 +332,51 @@
     * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 
-  </style>
+    /* ---------- Designumschaltung: Standard = hell, Dunkel nur per Button ---------- */
+  .theme-btn {
+    font:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:7px;
+    padding:8px 14px; border-radius:8px;
+    background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.45);
+  }
+  .theme-btn:hover { background:rgba(255,255,255,.26); }
+  .theme-btn:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  :root[data-theme="dark"] { --bw-blue:#5AA7DE; --bw-dark:#0A1E33; --bw-mid:#8CA3B5; --bw-light:#2E485E; --amber:#E8A23D; --amber-bg:#3B2F1B; --green:#57C2A2; --green-bg:#14332B; --ink:#DCE4EC; --bg:#0D1622; --card:#16222F; --border:#33465A; }
+    .drop, .upbtn.one, .semwrap, .semwrap-details, .helpbox, #modellbar, .btn-sm, .gs-btn, .mtab, .exp-tree-panel, .exp-main, .dcard, .diagbox, .dchip, td.cell, table.data, .rulecol, .vp-actions button, .gpanel, .gbtns button, .gpanel button, .emodal, .modalbox { background:var(--card); color:var(--ink); }
+    .drop:hover, .drop.over, .upbtn.one:hover, .btn-sm:hover, .gs-btn:hover, .mtab:hover, .pkg-card:hover, .dcard:hover, .vp-actions button:hover, .gbtns button:hover, .gpanel button:hover { background:#1E3044; }
+    .search-input-wrap input { background:#14202E; color:var(--ink); }
+    .search-input-wrap input:focus { background:#16222F; }
+    .tree-filter, .vpfilter, .emodal input, .emodal textarea, .emodal select { background:#14202E; color:var(--ink); }
+    .mmode { background:var(--card); color:var(--bw-mid); }
+    .vedit button { background:#3A2A16; border-color:#7A5A2A; color:#F0C078; }
+    .vedit button:hover { background:#4A3a1e; }
+    .vedit button.delbtn { background:#3A1B1B; border-color:#7A3A3A; color:#F2A0A0; }
+    .search-scopes, .gs-hdr, .semnote, .trow:hover, .gpill, .kpis span, .purpose, .vp-actions, .pkg-card, .dist-bar, .svgwrap, td.cell.nodata { background:#1A2736; color:var(--ink); }
+    .semnote.warn, #warnbar { background:#3A2B15; border-color:#6B4E1E; color:#F2D08A; }
+    .modelband { background:#182536; }
+    .vp-actions button.exp-png { background:#3A2E14; color:#F2C66D; border-color:#8A6A25; }
+    .vp-actions button.exp-xls { background:#14302A; color:#6FD6B0; border-color:#2E7A5F; }
+    .mtab:hover { background:#1E3044; }
+    .gsrow:hover, table.data tr:hover td { background:#1B2C3F; }
+    table.grid th.rowhead { background:#22364B; }
+    tr.bridge th.rowhead { background:#3A3219; color:#D9C072; }
+    tr.xmodel { background:#33290F; }
+    tr.xmodel:hover { background:#3E3318; }
+    code, table.data code { background:#22364B; color:#9CC8EF; }
+    .tbadge { background:#2A3A4D; color:#A8B9C8; }
+    .tbadge.diag, .gs-kind.k-diag, .b-diag { background:#3A2E14; color:#F2C66D; }
+    .gs-kind.k-pkg { background:#1C3452; color:#8FB8E8; }
+    .gs-kind.k-el { background:#2A3A4D; color:#C3D0DC; }
+    .gchip { background:#22364B; color:#9CC8EF; border-color:#3D5A78; }
+    .mchip-m1 { background:#22364B; }
+    .mchip-m2 { background:#3A2E14; color:#F2C66D; border-color:#6B4E1E; }
+    .mchip-m3 { background:#14332B; color:#6FD6B0; border-color:#2E7A5F; }
+    .up-hint, .mb-note, footer { color:var(--bw-mid); }
+    .semopt b, .semopt em, .exp-tag { color:var(--ink); }
+    .semopt:hover, .msvrow:hover { background:#1E3044; }
+    header { background:linear-gradient(135deg, #0A1E33 0%, #123A5C 100%); }
+  }
+</style>
 </head>
 <body>
 <header>
@@ -341,8 +385,11 @@
       <h1>🔍 ADMBw QEA Analyzer <span class="badge-v">v4.0</span></h1>
       <p>QEA-Architekturen verstehen: Pakete &amp; Sichten erkunden, im Graphen analysieren, Verbindungen zweier Elemente nachweisen und als PNG / Excel exportieren — 100&nbsp;% lokal im Browser, ohne KI.</p>
     </div>
+  
+    
+    <button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" aria-pressed="false" title="Zur dunklen Ansicht wechseln">🌙 Dunkles Design</button>
   </div>
-</header>
+  </header>
 <main>
   <div id="printmeta"></div>
   <div id="upload">
@@ -2503,6 +2550,37 @@ function zoomDiagSvg(diagId, factor, reset) {
   svg.setAttribute('width', String(Math.round(curW)));
   svg.setAttribute('height', String(Math.round(curH)));
 }
+
+/* ---------- Designumschaltung: Standard hell, Dunkel nur per Button ---------- */
+/* Designumschaltung: Standard hell, Wahl wird gespeichert (kein System-Dark mehr) */
+(function () {
+  try {
+    if (localStorage.getItem('eam-theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  } catch (e) {}
+  function sync() {
+    var b = document.getElementById('themeBtn');
+    if (!b) return;
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    b.textContent = dark ? '\u2600\uFE0F Helles Design' : '\u{1F319} Dunkles Design';
+    b.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    b.title = dark ? 'Zur hellen Ansicht wechseln' : 'Zur dunklen Ansicht wechseln';
+  }
+  window.toggleTheme = function () {
+    var root = document.documentElement;
+    if (root.getAttribute('data-theme') === 'dark') {
+      root.removeAttribute('data-theme');
+      try { localStorage.setItem('eam-theme', 'light'); } catch (e) {}
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      try { localStorage.setItem('eam-theme', 'dark'); } catch (e) {}
+    }
+    sync();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync);
+  else sync();
+})();
 
 /* ADMBw QEA Analyzer v4.0 — Teil 2: Globale Suche, Viewpoints, Steckbrief, Interaktives Diagramm & Prägnanter Graph */
 
