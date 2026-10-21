@@ -128,3 +128,10 @@ Das Skript prüft alle Script-Blöcke mit `node --check`, stellt sicher, dass ke
 Der ADMBw QEA Analyzer ist ein unabhängiges Drittanbieter-Produkt. Es ist nicht mit der Sparx Systems Pty Ltd verbunden, wird von dieser nicht unterstützt und nicht gesponsert. „Sparx Systems“ und „Enterprise Architect“ sind Marken oder eingetragene Marken der Sparx Systems Pty Ltd.
 
 *(Autor: Michael Estel)*
+
+## Rechtliches
+
+ADMBw QEA Analyzer ist ein unabhängiges Drittanbieter-Werkzeug. Es ist nicht mit der Sparx Systems Pty Ltd
+verbunden, wird von dieser nicht unterstützt und nicht gesponsert. „Sparx Systems" und
+„Enterprise Architect" sind Marken oder eingetragene Marken der Sparx Systems Pty Ltd.
+Alle weiteren Marken sind Eigentum ihrer jeweiligen Inhaber.
