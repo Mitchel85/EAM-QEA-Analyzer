@@ -4,7 +4,7 @@
 
 **QEA-Architekturen niederschwellig analysieren — und auf Wunsch bearbeiten. 100 % lokal im Browser, ohne KI, ohne Installation.**
 
-Einzeldatei-Tool (HTML & ASPX) für Sparx-EA-Architekturmodelle (`.qea` / `.eapx` / `.qeax`):
+Einzeldatei-Tool (HTML & ASPX) für Sparx-EA-Architekturmodelle (`.qea` / `.qeax`):
 Pakete & Sichten erkunden · Gesamtzusammenhang im Graphen analysieren · **Verbindungen zweier Elemente nachweisen** (ArAMIS-inspiriert) · jede Sicht als **PNG oder Excel (.xlsx)** exportieren. Knoten-Farben gemäß **ADMBw/NAFv4**.
 
 **NEU in v5.0 — Edit-Edition:** Architekturdaten auch **bearbeiten** (Elemente, Pakete, Sichten, Beziehungen, Tags; anlegen & entfernen) — geschrieben wird in eine **neue `.qea`-Datei**, das Original bleibt unangetastet. → [Edit-Edition](#edit-edition-v50--architektur-bearbeiten)
@@ -122,5 +122,9 @@ Das Skript prüft alle Script-Blöcke mit `node --check`, stellt sicher, dass ke
 
 ### v3.0 — 14.10.2026
 * Search-First-Oberfläche, Paket- & Sichten-Explorer, natives `.xlsx`/PNG-Export je Sicht, Graph mit manueller Knotenzahl + Slider, 3 Layouts.
+
+## Rechtliches
+
+Der ADMBw QEA Analyzer ist ein unabhängiges Drittanbieter-Produkt. Es ist nicht mit der Sparx Systems Pty Ltd verbunden, wird von dieser nicht unterstützt und nicht gesponsert. „Sparx Systems“ und „Enterprise Architect“ sind Marken oder eingetragene Marken der Sparx Systems Pty Ltd.
 
 *(Autor: Michael Estel)*
